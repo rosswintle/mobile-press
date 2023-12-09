@@ -26,13 +26,12 @@ class Scrape extends Command
     /**
      * Execute the console command.
      *
-     * @return mixed
+     * @return void
      */
-    public function handle()
+    public function handle(): void
     {
-        $pages = $this->getPagesList();
-        $posts = $this->getPostsList();
-
+        $this->getPagesList();
+        $this->getPostsList();
     }
 
     protected function getPagesList()
