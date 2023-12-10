@@ -47,7 +47,7 @@ document.addEventListener('alpine:init', () => {
              * @returns {Promise<void>}
              */
             async init() {
-                await this.loadPage('/who/', false);
+                // await this.loadPage('/data/index.html', false);
                 // await this.loadPage('/data/home/', true);
                 this.setWatchHandlersOnLinks();
             },
@@ -69,11 +69,15 @@ document.addEventListener('alpine:init', () => {
 
                 // Special case for home
                 if (path === '/') {
-                    path = '/data/home/';
+                    this.currentPage = '/';
+                    this.currentData = null;
+                    this.currentHtml = null;
                 }
 
                 console.log(`Loading page ${this.currentSiteUrl}${path}`);
 
+                // A pageLink is an in-app link that's direct link to an HTML file.
+                // We can just fetch that and load it.
                 if (isPageLink) {
                     try {
                         const response = await fetch(`${this.currentSiteUrl}${path}`);
@@ -88,22 +92,44 @@ document.addEventListener('alpine:init', () => {
                     return;
                 }
 
-                path = `${this.currentSiteUrl}/data${path}`;
-
-                // Replace the trailing slash with .json
-                path = path.replace(/\/?$/, '.json');
-
-                console.log(`JSON is at ${path}`);
-
-                try {
-                    const response = await fetch(path);
-                    const data = await response.json();
-                    this.currentPage = path;
-                    this.currentHtml = null;
-                    this.currentData = data;
-                } catch (error) {
-                    console.error(error);
+                // Only prepend the data path if it's not already there - Pagefind will have links
+                // to the data path already.
+                if (! path.startsWith('/data/')) {
+                    path = `/data${path}`;
                 }
+                path = `${this.currentSiteUrl}${path}`;
+
+                if (! path.endsWith('.html')) {
+                    // Replace the trailing slash with .json
+                    path = path.replace(/\/?$/, '.json');
+                }
+
+                console.log(`File is at ${path}`);
+
+                if (path.endsWith('.html')) {
+                    try {
+                        const response = await fetch(path);
+                        const data = await response.text();
+                        this.currentPage = path;
+                        this.currentHtml = data;
+                        this.currentData = null;
+                    } catch (error) {
+                        console.error(error);
+                    }
+                } else {
+                    try {
+                        const response = await fetch(path);
+                        const data = await response.json();
+                        this.currentPage = path;
+                        this.currentHtml = null;
+                        this.currentData = data;
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
+
+                // Clear the search box and UI
+                document.querySelector('.pagefind-ui__search-clear').click();
             },
 
 
@@ -149,9 +175,9 @@ document.addEventListener('alpine:init', () => {
                     // are internal links and should be handled by the app.
                     const url = new URL(href, savedThis.currentSiteUrl);
                     if (
-                        url.hostname &&
-                        ! (url.hostname === savedThis.originalSiteUrl ||
-                        url.hostname === savedThis.currentSiteUrl)
+                        url.origin &&
+                        ! (url.origin === savedThis.originalSiteUrl ||
+                        url.origin === savedThis.currentSiteUrl)
                         ) {
                         return;
                     }
