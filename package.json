@@ -1,0 +1,17 @@
+{
+  "name": "mobile-press",
+  "version": "1.0.0",
+  "description": "<a href=\"https://supportukrainenow.org/\"><img src=\"https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct.svg\" width=\"100%\"></a>",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "pagefind": "^1.0.4"
+  }
+}

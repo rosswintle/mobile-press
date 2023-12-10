@@ -3,6 +3,7 @@
 /.vscode
 /.vagrant
 /public
+/node_modules
 .phpunit.result.cache
 .env
 

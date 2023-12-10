@@ -62,21 +62,27 @@ class Post
 
     public function saveToDisk(): void
     {
-        $postPath = $this->getPath();
+        $postJsonPath = $this->getJsonPath();
+        $postHtmlPath = $this->getHtmlPath();
 
-        echo "Saving post $this->id to $postPath\n";
+        echo "Saving post $this->id to $postJsonPath\n";
 
         // Save the post, creating its path directories recursively if needed. Use Laravel helpers.
-        File::ensureDirectoryExists(dirname($postPath));
-        File::put($postPath, json_encode($this->dataAsArray, JSON_PRETTY_PRINT));
+        File::ensureDirectoryExists(dirname($postJsonPath));
+        File::put($postJsonPath, json_encode($this->dataAsArray, JSON_PRETTY_PRINT));
+
+        File::ensureDirectoryExists(dirname($postHtmlPath));
+        // We output HTML for pagefind to index. This requires a <body> tag.
+        File::put($postHtmlPath, '<body><header><h1 data-pagefind-meta="title">' . $this->title . '</h1></header><main>' . $this->content . '</main></body>');
     }
 
     /**
      * Gets the file path for this post
      *
+     * @param string $extension
      * @return string
      */
-    public function getPath(): string
+    public function getDataFilePath(string $extension): string
     {
         // TODO: Construct this once somewhere!
         $baseFilePath = config('scraping.public_path') . '/data';
@@ -84,16 +90,27 @@ class Post
         // Ensure that the basePath ends with a slash
         $baseFilePath = rtrim($baseFilePath, '/') . '/';
 
+        // Home page is a special case
         if ($this->isHomePage()) {
-            return $baseFilePath . 'index.json';
+            return $baseFilePath . 'index.' . $extension;
         }
 
+        // Construct the path to the file
         $postPath = rtrim($this->link, '/');
         // Remove the old site's domain from the path
         $postPath = str_replace(config('scraping.old_site_home'), '', $postPath);
-        return $baseFilePath . $postPath . '.json';
+        return $baseFilePath . $postPath . '.' . $extension;
     }
 
+    private function getJsonPath()
+    {
+        return $this->getDataFilePath('json');
+    }
+
+    private function getHtmlPath()
+    {
+        return $this->getDataFilePath('html');
+    }
 
     /**
      * Returns true if this post is the home page
@@ -104,4 +121,5 @@ class Post
     {
         return $this->link === config('scraping.old_site_home');
     }
+
 }

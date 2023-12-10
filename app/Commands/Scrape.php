@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\data\PostList;
+use Illuminate\Support\Facades\File;
 use LaravelZero\Framework\Commands\Command;
 
 class Scrape extends Command
@@ -30,6 +31,7 @@ class Scrape extends Command
     {
         $this->getPagesList();
         $this->getPostsList();
+        $this->copyTemplates();
     }
 
     protected function getPagesList()
@@ -44,6 +46,11 @@ class Scrape extends Command
         $posts = new PostList('posts');
         $posts->fetchList();
 //        ray($posts);
+    }
+
+    private function copyTemplates()
+    {
+        File::copy(__DIR__ . '/../../resources/templates/index.html', config('scraping.public_path') . '/index.php');
     }
 }
 
