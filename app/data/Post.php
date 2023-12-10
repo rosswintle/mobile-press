@@ -92,7 +92,7 @@ class Post
 
         // Home page is a special case
         if ($this->isHomePage()) {
-            return $baseFilePath . 'index.' . $extension;
+            return $baseFilePath . 'home.' . $extension;
         }
 
         // Construct the path to the file

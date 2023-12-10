@@ -50,7 +50,9 @@ class Scrape extends Command
 
     private function copyTemplates()
     {
-        File::copy(__DIR__ . '/../../resources/templates/index.html', config('scraping.public_path') . '/index.php');
+        File::copy(__DIR__ . '/../../resources/templates/index.html', config('scraping.public_path') . '/index.html');
+        File::ensureDirectoryExists(config('scraping.public_path') . '/js');
+        File::copy(__DIR__ . '/../../resources/js/main.js', config('scraping.public_path') . '/js/main.js');
     }
 }
 
