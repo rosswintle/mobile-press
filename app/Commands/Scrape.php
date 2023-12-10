@@ -3,9 +3,7 @@
 namespace App\Commands;
 
 use App\data\PostList;
-use Illuminate\Console\Scheduling\Schedule;
 use LaravelZero\Framework\Commands\Command;
-use RickWest\WordPress\Facades\WordPress;
 
 class Scrape extends Command
 {
@@ -38,14 +36,14 @@ class Scrape extends Command
     {
         $pages = new PostList('pages');
         $pages->fetchList();
-        ray($pages);
+//        ray($pages);
     }
 
     protected function getPostsList()
     {
         $posts = new PostList('posts');
         $posts->fetchList();
-        ray($posts);
+//        ray($posts);
     }
 }
 

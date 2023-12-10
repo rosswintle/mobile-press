@@ -28,6 +28,7 @@ class PostList
 
     public function __construct(string $postType)
     {
+        $this->idList = collect();
         $this->postType = $postType;
     }
 
@@ -40,35 +41,52 @@ class PostList
         $page1 = WordPressResponse::fromArray(wordpress()->$type()->withOptions(['verify' => false])->get());
         $this->pages = $page1->meta->pages;
         $this->count = $page1->meta->total;
-        $this->fetchAllIds();
+        $this->fetchAllIds(true);
     }
 
     /**
+     * @param bool|null $savePostsToDisk
      * @return void
      */
-    protected function fetchAllIds(): void
+    protected function fetchAllIds(?bool $savePostsToDisk = false): void
     {
         $type = $this->postType;
         $pageNums = collect(range(1, $this->pages));
-        $this->idList = $pageNums->map([$this, 'fetchPostIds'])->flatten();
+        // Using map here load _all_ the posts into memory. So loop instead.
+        foreach ($pageNums as $page) {
+            $this->idList = $this->idList->merge($this->fetchPostIds($page, $savePostsToDisk));
+        }
     }
 
     /**
+     * Fetches a page of posts from the API. Optionally save the data to disk.
+     *
      * @param int $page
+     * @param bool|null $saveToDisk
      * @return Collection<Post>
      */
-    public function fetchPosts(int $page): Collection
+    public function fetchPosts(int $page, ?bool $saveToDisk = false): Collection
     {
+        echo "Fetching page $page of {$this->pages} for {$this->postType}\n";
         $type = $this->postType;
-        $response = WordPressResponse::fromArray(wordpress()->$type()->withOptions(['verify' => false])->page($page)->get());
+        $response = WordPressResponse::fromArray(wordpress()->$type()->withOptions(['verify' => false])
+            ->page($page)
+            ->get());
+
+        if ($saveToDisk) {
+            $response->posts->each(function (Post $post) {
+                $post->saveToDisk();
+            });
+        }
+
         return $response->posts;
     }
 
     /**
      * @return Collection<int>
      */
-    public function fetchPostIds(int $page): Collection
+    public function fetchPostIds(int $page, ?bool $saveToDisk = false): Collection
     {
-        return $this->fetchPosts($page)->pluck('id');
+        return $this->fetchPosts($page, $saveToDisk)->pluck('id');
     }
 }
