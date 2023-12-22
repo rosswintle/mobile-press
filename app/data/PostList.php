@@ -72,8 +72,11 @@ class PostList
         $response = WordPressResponse::fromArray(wordpress()->$type()->withOptions(['verify' => false])
             ->page($page)
             ->get());
+        $response->page = $page;
+        $response->type = $type;
 
         if ($saveToDisk) {
+            $response->saveToDisk();
             $response->posts->each(function (Post $post) {
                 $post->saveToDisk();
             });

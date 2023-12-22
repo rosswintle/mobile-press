@@ -27,12 +27,32 @@
 
     <template x-if="currentData">
         <article>
-            <h2 class="text-2xl font-bold mb-8"><span x-text="currentData.title.rendered"></span></h2>
+            <h2 class="text-2xl font-bold mb-8"><span x-html="currentData.title.rendered"></span></h2>
             <div class="prose" x-html="currentData?.content?.rendered"></div>
         </article>
     </template>
 
-
+    <template x-if="currentPosts">
+        <article>
+            <h2 class="text-2xl font-bold mb-8">Posts</h2>
+            <ul>
+                <template x-for="post in currentPosts">
+                    <li class="mb-6">
+                        <article>
+                            <date class="text-gray-500 text-sm" x-text="formatDate(new Date(post.dateGmt))"></date>
+                            <h2>
+                                <a
+                                    :href="post.link"
+                                    class="text-xl font-bold"
+                                    x-html="post.title"
+                                ></a>
+                            </h2>
+                        </article>
+                    </li>
+                </template>
+            </ul>
+        </article>
+    </template>
 </main>
 
 <footer class="">
