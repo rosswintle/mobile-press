@@ -44,6 +44,8 @@ class WordPressResponse
         // Save the post, creating its path directories recursively if needed. Use Laravel helpers.
         File::ensureDirectoryExists(dirname($indexFilePath));
         File::put($indexFilePath, $this->posts->toJson(JSON_PRETTY_PRINT));
+
+        $this->saveMetaToDisk();
     }
 
     /**
@@ -62,5 +64,12 @@ class WordPressResponse
         // Construct the path to the file
         $postPath = $this->type . '/' . $this->page;
         return $baseFilePath . $postPath . '.json';
+    }
+
+    private function saveMetaToDisk()
+    {
+        if ($this->meta) {
+            $this->meta->saveToDisk($this->type);
+        }
     }
 }
