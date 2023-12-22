@@ -75,15 +75,14 @@ document.addEventListener('alpine:init', () => {
 
                 // Special case for home
                 if (path === '/') {
-                    this.currentPage = '/';
-                    this.currentData = null;
-                    this.currentHtml = null;
-                    this.currentPosts = null;
-
                     // Fetch the posts list
                     try {
                         const response = await fetch(`/data/posts/1.json`);
                         const data = await response.json();
+                        this.currentPage = '/';
+                        this.currentData = null;
+                        this.currentHtml = null;
+                        this.currentPosts = null;
                         console.log(data);
                         this.currentPosts = data;
                     } catch (error) {
