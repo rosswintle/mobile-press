@@ -33,7 +33,7 @@
     </template>
 
     <template x-if="currentPosts">
-        <article>
+        <div>
             <h2 class="text-2xl font-bold mb-8">Posts</h2>
             <ul>
                 <template x-for="post in currentPosts">
@@ -51,7 +51,9 @@
                     </li>
                 </template>
             </ul>
-        </article>
+
+            <button @click="loadMorePosts" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded">Load more</button>
+        </div>
     </template>
 </main>
 

@@ -19,6 +19,12 @@ document.addEventListener('alpine:init', () => {
             // currentSiteDomain: window.location.hostname,
 
             /**
+             * The site meta (total posts and pages).
+             * @type {Array}
+             */
+            siteMeta: {},
+
+            /**
              * The current site origin.
              * @type {string}
              */
@@ -42,20 +48,43 @@ document.addEventListener('alpine:init', () => {
             currentPosts: null,
 
             /**
-             * The current page.
+             * currentPageNumber
+             * @type {number}
+             */
+            currentPageNumber: 1,
+
+            /**
+             * The current page URL.
              * @type {string}
              */
-            currentPage: '/',
+            currentUrl: '/',
 
             /**
              * Initializes the app.
              * @returns {Promise<void>}
              */
             async init() {
+                // TODO: Save types in a data file?
+                await this.loadMeta('posts');
+                await this.loadMeta('pages');
                 // await this.loadPage('/data/index.html', false);
                 // await this.loadPage('/data/home/', true);
                 await this.loadPage('/', false);
                 this.setWatchHandlersOnLinks();
+            },
+
+            /**
+             * Loads the meta data for the site.
+             */
+            async loadMeta(type) {
+                try {
+                    const response = await fetch(`/data/${type}/meta.json`);
+                    const data = await response.json();
+                    // TODO: Error checking
+                    this.siteMeta[type] = data;
+                } catch (error) {
+                    console.error(error);
+                }
             },
 
             /**
@@ -79,7 +108,7 @@ document.addEventListener('alpine:init', () => {
                     try {
                         const response = await fetch(`/data/posts/1.json`);
                         const data = await response.json();
-                        this.currentPage = '/';
+                        this.currentUrl = '/';
                         this.currentData = null;
                         this.currentHtml = null;
                         this.currentPosts = null;
@@ -100,7 +129,7 @@ document.addEventListener('alpine:init', () => {
                     try {
                         const response = await fetch(`${this.currentSiteUrl}${path}`);
                         const data = await response.text();
-                        this.currentPage = path;
+                        this.currentUrl = path;
                         this.currentData = null;
                         this.currentHtml = data;
                         this.currentPosts = null;
@@ -129,7 +158,7 @@ document.addEventListener('alpine:init', () => {
                     try {
                         const response = await fetch(path);
                         const data = await response.text();
-                        this.currentPage = path;
+                        this.currentUrl = path;
                         this.currentHtml = data;
                         this.currentData = null;
                         this.currentPosts = null;
@@ -140,7 +169,7 @@ document.addEventListener('alpine:init', () => {
                     try {
                         const response = await fetch(path);
                         const data = await response.json();
-                        this.currentPage = path;
+                        this.currentUrl = path;
                         this.currentHtml = null;
                         this.currentData = data;
                         this.currentPosts = null;
@@ -153,6 +182,26 @@ document.addEventListener('alpine:init', () => {
                 document.querySelector('.pagefind-ui__search-clear').click();
             },
 
+            /**
+             * Loads the next page of posts.
+             */
+            async loadMorePosts() {
+                if (this.currentPageNumber >= this.siteMeta.posts.totalPages) {
+                    return;
+                }
+
+                this.currentPageNumber++;
+
+                try {
+                    const response = await fetch(`/data/posts/${this.currentPageNumber}.json`);
+                    const data = await response.json();
+                    // Add the new data to the existing posts
+                    this.currentPosts = this.currentPosts.concat(data);
+                } catch (error) {
+                    console.error(error);
+                }
+
+            },
 
             /**
              * Returns the closest link element to the given element, or the element itself
