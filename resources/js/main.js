@@ -69,6 +69,7 @@ document.addEventListener('alpine:init', () => {
                 await this.loadMeta('pages');
                 // await this.loadPage('/data/index.html', false);
                 // await this.loadPage('/data/home/', true);
+                this.currentPageNumber = this.siteMeta.posts.pages;
                 await this.loadPage('/', false);
                 this.setWatchHandlersOnLinks();
             },
@@ -106,14 +107,16 @@ document.addEventListener('alpine:init', () => {
                 if (path === '/') {
                     // Fetch the posts list
                     try {
-                        const response = await fetch(`/data/posts/1.json`);
+                        const lastPageNumber = this.siteMeta.posts.pages;
+                        const response = await fetch(`/data/posts/${lastPageNumber}.json`);
                         const data = await response.json();
                         this.currentUrl = '/';
                         this.currentData = null;
                         this.currentHtml = null;
                         this.currentPosts = null;
                         console.log(data);
-                        this.currentPosts = data;
+                        // Posts are ordered oldest first, so reverse before adding
+                        this.currentPosts = data.reverse();
                     } catch (error) {
                         console.error(error);
                     }
@@ -186,18 +189,19 @@ document.addEventListener('alpine:init', () => {
              * Loads the next page of posts.
              */
             async loadMorePosts() {
-                if (this.currentPageNumber >= this.siteMeta.posts.totalPages) {
+                if (this.currentPageNumber < 1) {
                     return;
                 }
 
-                this.currentPageNumber++;
+                this.currentPageNumber--;
 
                 try {
                     const response = await fetch(`/data/posts/${this.currentPageNumber}.json`);
                     const data = await response.json();
-                    // Add the new data to the existing posts
-                    this.currentPosts = this.currentPosts.concat(data);
-                } catch (error) {
+                    // Add the new data to the existing posts. Note that items are
+                    // ordered oldest first, so we need to reverse the new data before
+                    // adding it.
+                    this.currentPosts = this.currentPosts.concat(data.reverse());                } catch (error) {
                     console.error(error);
                 }
 

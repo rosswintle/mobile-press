@@ -61,6 +61,11 @@ class PostList
     /**
      * Fetches a page of posts from the API. Optionally save the data to disk.
      *
+     * Note that we query and save with the oldest posts first. This is so that
+     * when we do content updates, we minimise the change in the Git repository.
+     * This does mean that the JS also needs to reverse the order of the posts
+     * when displaying them to get them back in reverse-chronological order.
+     *
      * @param int $page
      * @param bool|null $saveToDisk
      * @return Collection<Post>
@@ -69,7 +74,7 @@ class PostList
     {
         echo "Fetching page $page of {$this->pages} for {$this->postType}\n";
         $type = $this->postType;
-        $response = WordPressResponse::fromArray(wordpress()->$type()->withOptions(['verify' => false])
+        $response = WordPressResponse::fromArray(wordpress()->$type()->oldest()->withOptions(['verify' => false])
             ->page($page)
             ->get());
         $response->page = $page;
